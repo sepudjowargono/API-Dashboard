@@ -73,3 +73,29 @@
       font-style: italic;
       color: #807c7cb9;
     }
+
+    .error { 
+      color: #b00020;
+    }
+
+    .badge { 
+      background:#eee; padding:2px 6px; border-radius:6px; font-size:12px; 
+    }
+
+    .muted { 
+      color:#777; 
+    }
+
+    .small { 
+      font-size: 0.95rem; 
+    }
+
+    .card-row { 
+      display:flex; 
+      flex-direction:column; 
+      gap:8px; 
+    }
+
+    .api-img { 
+      max-width: 220px; 
+    }

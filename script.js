@@ -20,24 +20,21 @@ const CONFIG = {
 };
 
 // ==================== OPERATION MAPPINGS ====================
+// `handlerFn` uses the function declarations (hoisted) to avoid fragile string lookups
 const operations = [
-  { buttonId: "dog-button", outputId: "dog-output", handler: "getDogImage", message: 'Click "Get Dog" to load an image.' },
-  { buttonId: "cat-button", outputId: "cat-output", handler: "getCatImage", message: 'Click "Get Cat" to load an image.' },
-  { buttonId: "joke-button", outputId: "joke-output", handler: "getJoke", message: 'Click "Get Joke" for a random joke.' },
-  { buttonId: "pokemon-button", outputId: "pokemon-output", handler: "getPokemon", message: 'Click "Get Pokémon" for a random Pokémon.' },
-  { buttonId: "weather-button", outputId: "weather-output", handler: "getWeather", message: 'Click "Get Weather" to load Toronto weather.' },
-  { buttonId: "airquality-button", outputId: "airquality-output", handler: "getAirQuality", message: 'Click "Get Air Quality" to load Toronto air quality.' },
-  { buttonId: "sun-button", outputId: "sun-output", handler: "getSunTimes", message: 'Click "Get Sun Times" to load sunrise and sunset data for Toronto.' },
-  { buttonId: "currency-button", outputId: "currency-output", handler: "getExchangeRates", message: 'Click "Get Rates" to load USD exchange rates.' },
+  { key: "getDogImage", buttonId: "dog-button", outputId: "dog-output", handlerFn: getDogImage, message: 'Click "Get Dog" to load an image.' },
+  { key: "getCatImage", buttonId: "cat-button", outputId: "cat-output", handlerFn: getCatImage, message: 'Click "Get Cat" to load an image.' },
+  { key: "getJoke", buttonId: "joke-button", outputId: "joke-output", handlerFn: getJoke, message: 'Click "Get Joke" for a random joke.' },
+  { key: "getPokemon", buttonId: "pokemon-button", outputId: "pokemon-output", handlerFn: getPokemon, message: 'Click "Get Pokémon" for a random Pokémon.' },
+  { key: "getWeather", buttonId: "weather-button", outputId: "weather-output", handlerFn: getWeather, message: 'Click "Get Weather" to load Toronto weather.' },
+  { key: "getAirQuality", buttonId: "airquality-button", outputId: "airquality-output", handlerFn: getAirQuality, message: 'Click "Get Air Quality" to load Toronto air quality.' },
+  { key: "getSunTimes", buttonId: "sun-button", outputId: "sun-output", handlerFn: getSunTimes, message: 'Click "Get Sun Times" to load sunrise and sunset data for Toronto.' },
+  { key: "getExchangeRates", buttonId: "currency-button", outputId: "currency-output", handlerFn: getExchangeRates, message: 'Click "Get Rates" to load USD exchange rates.' },
 ];
 
-// ==================== CACHED DOM ELEMENTS ====================
+// ==================== CACHED DOM ELEMENTS (populated on DOMContentLoaded) ====================
 const outputElements = {};
 const buttons = {};
-operations.forEach(op => {
-  outputElements[op.handler] = document.getElementById(op.outputId);
-  buttons[op.handler] = document.getElementById(op.buttonId);
-});
 
 // ==================== HELPER FUNCTIONS ====================
 function setLoading(response, message = "Loading...") {
@@ -75,7 +72,11 @@ function validateResponse(data, requiredFields) {
 
 // ==================== API FUNCTIONS ====================
 async function getDogImage() {
-  const response = outputElements.getDogImage;
+  const response = outputElements["getDogImage"];
+  if (!response) {
+    console.error("Output element for dog image not found");
+    return;
+  }
   setLoading(response, "Fetching a random dog...");
 
   try {
@@ -93,16 +94,23 @@ async function getDogImage() {
 }
 
 async function getCatImage() {
-  const response = outputElements.getCatImage;
+  const response = outputElements["getCatImage"];
+  if (!response) {    
+    return console.error("Output element for cat image not found");
+  }
   setLoading(response, "Fetching a random cat...");
 
   try {
     const data = await fetchJson(CONFIG.apiEndpoints.cat);
-    validateResponse(data, ["0"]);
+
+    if (!Array.isArray(data) || !data[0] || !data[0].url) {
+      throw new Error("Unexpected response format");
+    }
+
     response.innerHTML = `
       <div class="card-row">
         <img class="api-img" src="${data[0].url}" alt="Random cat" />
-        <p class="muted-small">Source: TheCatAPI (https://developers.thecatapi.com/view-account/ylX4blBYT9FaoVd6OhvR?report=bOoHBz-8t)</p>
+        <p class="muted-small">Source: TheCatAPI (https://thecatapi.com/)</p>
       </div>
     `;
   } catch (err) {
@@ -111,7 +119,11 @@ async function getCatImage() {
 }
 
 async function getJoke() {
-  const response = outputElements.getJoke;
+  const response = outputElements["getJoke"];
+  if (!response) {
+    console.error("Output element for joke not found");
+    return;
+  }
   setLoading(response, "Fetching a joke...");
 
   try {
@@ -137,7 +149,11 @@ async function getJoke() {
 }
 
 async function getPokemon() {
-  const response = outputElements.getPokemon;
+  const response = outputElements["getPokemon"];
+  if (!response) {
+    console.error("Output element for pokemon not found");
+    return;
+  }
   setLoading(response, "Fetching a random Pokémon...");
 
   try {
@@ -166,7 +182,11 @@ async function getPokemon() {
 }
 
 async function getWeather() {
-  const response = outputElements.getWeather;
+  const response = outputElements["getWeather"];
+  if (!response) {
+    console.error("Output element for weather not found");
+    return;
+  }
   setLoading(response, "Fetching weather (Toronto)...");
 
   try {
@@ -200,7 +220,11 @@ async function getWeather() {
 }
 
 async function getAirQuality() {
-  const response = outputElements.getAirQuality;
+  const response = outputElements["getAirQuality"];
+  if (!response) {
+    console.error("Output element for air quality not found");
+    return;
+  }
   setLoading(response, "Fetching Toronto air quality...");
 
   try {
@@ -231,7 +255,11 @@ async function getAirQuality() {
 }
 
 async function getSunTimes() {
-  const response = outputElements.getSunTimes;
+  const response = outputElements["getSunTimes"];
+  if (!response) {
+    console.error("Output element for sun times not found");
+    return;
+  }
   setLoading(response, "Fetching sun times for Toronto...");
 
   try {
@@ -262,8 +290,12 @@ async function getSunTimes() {
 }
 
 async function getExchangeRates() {
-  const response = outputElements.getExchangeRates;
-  setLoading(response, "Fetching exchange rates (USD)...");
+  const response = outputElements["getExchangeRates"];
+  if (!response) {
+    console.error("Output element for exchange rates not found");
+    return;
+  }
+  setLoading(response, "Fetching exchange rates (CAD)...");
 
   try {
     const data = await fetchJson(CONFIG.apiEndpoints.exchangeRates);
@@ -295,11 +327,24 @@ document.addEventListener("DOMContentLoaded", () => {
   operations.forEach(op => {
     // Initialize output messages
     const outputElement = document.getElementById(op.outputId);
-    setMuted(outputElement, op.message);
+    if (outputElement) {
+      outputElements[op.key] = outputElement;
+      setMuted(outputElement, op.message);
+    } else {
+      console.warn(`Missing output element: ${op.outputId}`);
+    }
 
-    // Attach event listeners
+    // Attach event listeners (safely)
     const button = document.getElementById(op.buttonId);
-    const handlerFunction = window[op.handler];
-    button.addEventListener("click", handlerFunction);
+    if (button) {
+      buttons[op.key] = button;
+      if (typeof op.handlerFn === "function") {
+        button.addEventListener("click", op.handlerFn);
+      } else {
+        console.warn(`Handler function missing for ${op.key}`);
+      }
+    } else {
+      console.warn(`Missing button element: ${op.buttonId}`);
+    }
   });
 });
